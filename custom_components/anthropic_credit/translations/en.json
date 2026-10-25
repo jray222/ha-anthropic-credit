@@ -1,0 +1,57 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Anthropic API credit",
+        "description": "Anthropic has no API that returns your credit balance, so this works it out: the balance you enter below, minus what Anthropic reports you have spent since that day.\n\nYou need an Admin API key (starts with sk-ant-admin). Create one in the Claude Console under Settings, Admin keys. A normal API key will not work.",
+        "data": {
+          "admin_key": "Admin API key",
+          "balance": "Credit balance right after your last top-up (USD)",
+          "top_up_date": "Date of that top-up"
+        },
+        "data_description": {
+          "balance": "Look it up in the Claude Console under Settings, Billing. You can change it later with Configure.",
+          "top_up_date": "Spend from this day on (UTC) is subtracted from the balance."
+        }
+      },
+      "reauth_confirm": {
+        "title": "New Anthropic admin key",
+        "description": "Anthropic refused the saved admin key. Enter a new one.",
+        "data": {
+          "admin_key": "Admin API key"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Anthropic refused this key. Make sure it is an Admin API key and has not been revoked.",
+      "cannot_connect": "Could not reach the Anthropic API. Try again in a minute.",
+      "not_admin_key": "This is not an Admin API key. Admin keys start with sk-ant-admin."
+    },
+    "abort": {
+      "already_configured": "This admin key is already set up.",
+      "reauth_successful": "The new key works."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Anthropic API credit",
+        "description": "After you add credit, enter the new balance and today's date here.",
+        "data": {
+          "balance": "Credit balance right after your last top-up (USD)",
+          "top_up_date": "Date of that top-up",
+          "scan_interval": "Check every (minutes)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "remaining": { "name": "Credit remaining" },
+      "spent_since_top_up": { "name": "Spent since top-up" },
+      "spent_today": { "name": "Spent today" },
+      "spent_yesterday": { "name": "Spent yesterday" },
+      "spent_this_month": { "name": "Spent this month" }
+    }
+  }
+}
