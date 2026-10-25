@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="256" viewBox="0 0 900 256"><defs>
+ <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#2e2a26"/><stop offset="1" stop-color="#161412"/>
+ </linearGradient>
+ <linearGradient id="clay" x1="40" y1="200" x2="216" y2="40" gradientUnits="userSpaceOnUse">
+  <stop offset="0" stop-color="#c2552e"/><stop offset="1" stop-color="#f0a46e"/>
+ </linearGradient>
+ <linearGradient id="coin" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#fbf4e8"/><stop offset="1" stop-color="#e6d6bd"/>
+ </linearGradient>
+</defs><g>
+ <rect x="4" y="4" width="248" height="248" rx="56" fill="url(#tile)"/>
+ <path d="M66.6 189.4 A87 87 0 1 1 189.4 189.4" fill="none" stroke="#4a443d" stroke-width="20" stroke-linecap="round"/>
+ <path d="M66.6 189.4 A87 87 0 0 1 189.4 66.6" fill="none" stroke="url(#clay)" stroke-width="20" stroke-linecap="round"/>
+ <circle cx="128" cy="128" r="54" fill="url(#coin)"/>
+ <circle cx="128" cy="128" r="44" fill="none" stroke="#c2552e" stroke-width="5" opacity="0.55"/>
+ <text x="128" y="155" text-anchor="middle" font-family="Inter" font-weight="800" font-size="78" fill="#c2552e">$</text>
+</g><text x="284" y="128" font-family="Inter" font-weight="800" font-size="92" fill="#161412" letter-spacing="-2">Anthropic</text>
+<text x="288" y="214" font-family="Inter" font-weight="500" font-size="72" fill="#d0683f" letter-spacing="10">CREDIT</text></svg>

@@ -1,5 +1,7 @@
 # Anthropic Credit for Home Assistant
 
+<p align="center"><img src="https://raw.githubusercontent.com/jray222/ha-anthropic-credit/main/images/logo.png" alt="Anthropic Credit" width="420"></p>
+
 Shows roughly how much Anthropic API credit you have left, as Home Assistant sensors.
 
 Anthropic has no API that returns your prepaid credit balance. What it does have is the
@@ -65,3 +67,13 @@ Use the automation editor: trigger **Numeric state** on
 
 Under **Configure**: balance, top-up date, and how often to check (default 30 minutes).
 If the key is revoked, Home Assistant asks for a new one (reauthentication).
+
+## Icon
+
+The icon and logo are original artwork made for this integration (not Anthropic's or Home
+Assistant's logos). Home Assistant 2026.3 and later shows them on the Integrations page from
+`custom_components/anthropic_credit/brand/`. The SVG sources are in `images/`.
+
+HACS itself does not read these yet, so the HACS list may still say "Icon not available"
+until HACS adds support (hacs/integration#5388). The home-assistant/brands repository no
+longer takes custom integrations, so there is nothing else to submit.
