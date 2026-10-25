@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+import json
 
 import aiohttp
 
@@ -56,10 +57,13 @@ class AnthropicCostClient:
             ) as resp:
                 if resp.status in (401, 403):
                     raise AnthropicAuthError(f"HTTP {resp.status}")
-                body = await resp.json(content_type=None)
                 if resp.status >= 400:
-                    message = (body or {}).get("error", {}).get("message", "")
+                    text = await resp.text()
+                    try:
+                        message = json.loads(text).get("error", {}).get("message", "")
+                    except (ValueError, AttributeError):
+                        message = text[:200]
                     raise AnthropicError(f"HTTP {resp.status} {message}".strip())
-                return body
+                return await resp.json(content_type=None)
         except (aiohttp.ClientError, TimeoutError, ValueError) as err:
             raise AnthropicError(str(err) or type(err).__name__) from err
