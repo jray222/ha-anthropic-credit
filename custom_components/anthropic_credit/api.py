@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import UTC, date, datetime, timedelta
 import json
 
 import aiohttp
@@ -14,6 +14,10 @@ MAX_PAGES = 40  # 31 days a page, so a bit over 3 years
 
 class AnthropicError(Exception):
     """The Admin API said no, or could not be reached."""
+
+    def __init__(self, message: str, status: int | None = None) -> None:
+        super().__init__(message)
+        self.status = status
 
 
 class AnthropicAuthError(AnthropicError):
@@ -29,8 +33,21 @@ class AnthropicCostClient:
 
     async def daily_costs(self, start: date) -> dict[date, float]:
         """Return dollars spent per UTC day, from `start` up to today."""
+        today = datetime.now(UTC).date()
+        try:
+            # The end is exclusive, so tomorrow includes today's partial day.
+            return await self._daily_costs(start, today + timedelta(days=1))
+        except AnthropicError as err:
+            # In case Anthropic refuses an end date in the future,
+            # fall back to whole days up to the end of yesterday.
+            if err.status != 400 or start >= today:
+                raise
+            return await self._daily_costs(start, today)
+
+    async def _daily_costs(self, start: date, end: date) -> dict[date, float]:
         params = {
             "starting_at": f"{start.isoformat()}T00:00:00Z",
+            "ending_at": f"{end.isoformat()}T00:00:00Z",
             "bucket_width": "1d",
             "limit": "31",
         }
@@ -56,14 +73,14 @@ class AnthropicCostClient:
                 timeout=aiohttp.ClientTimeout(total=30),
             ) as resp:
                 if resp.status in (401, 403):
-                    raise AnthropicAuthError(f"HTTP {resp.status}")
+                    raise AnthropicAuthError(f"HTTP {resp.status}", resp.status)
                 if resp.status >= 400:
                     text = await resp.text()
                     try:
                         message = json.loads(text).get("error", {}).get("message", "")
                     except (ValueError, AttributeError):
                         message = text[:200]
-                    raise AnthropicError(f"HTTP {resp.status} {message}".strip())
+                    raise AnthropicError(f"HTTP {resp.status} {message}".strip(), resp.status)
                 return await resp.json(content_type=None)
         except (aiohttp.ClientError, TimeoutError, ValueError) as err:
             raise AnthropicError(str(err) or type(err).__name__) from err

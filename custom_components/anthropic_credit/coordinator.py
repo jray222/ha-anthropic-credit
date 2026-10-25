@@ -64,7 +64,7 @@ class AnthropicCreditCoordinator(DataUpdateCoordinator[CreditData]):
             raise UpdateFailed(f"Anthropic cost report failed: {err}") from err
 
         def spent(since: date, until: date = today) -> float:
-            return round(sum(v for d, v in days.items() if since <= d <= until), 2)
+            return round(sum((v for d, v in days.items() if since <= d <= until), 0.0), 2)
 
         since_top_up = spent(top_up)
         return CreditData(

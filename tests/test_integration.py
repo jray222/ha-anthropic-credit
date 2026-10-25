@@ -35,7 +35,7 @@ def bucket(day: str, *cents: str) -> dict:
 def mock_report(mock: AiohttpClientMocker) -> None:
     """Two pages: September and early October, then the rest of October."""
     mock.get(
-        f"{COST_REPORT_URL}?starting_at=2026-09-20T00:00:00Z&bucket_width=1d&limit=31&page=p2",
+        f"{COST_REPORT_URL}?starting_at=2026-09-20T00:00:00Z&ending_at=2026-10-26T00:00:00Z&bucket_width=1d&limit=31&page=p2",
         json={
             "data": [bucket("2026-10-24", "250"), bucket("2026-10-25", "75.5", "24.5")],
             "has_more": False,
@@ -43,7 +43,7 @@ def mock_report(mock: AiohttpClientMocker) -> None:
         },
     )
     mock.get(
-        f"{COST_REPORT_URL}?starting_at=2026-09-20T00:00:00Z&bucket_width=1d&limit=31",
+        f"{COST_REPORT_URL}?starting_at=2026-09-20T00:00:00Z&ending_at=2026-10-26T00:00:00Z&bucket_width=1d&limit=31",
         json={
             "data": [bucket("2026-09-20", "1000"), bucket("2026-10-01", "500")],
             "has_more": True,
@@ -170,3 +170,22 @@ async def test_api_error_shown_in_flow(hass: HomeAssistant, aioclient_mock: Aioh
     )
     assert result["errors"] == {"base": "cannot_connect"}
     assert result["description_placeholders"]["problem"] == "HTTP 400 starting_at is in the future"
+
+
+async def test_future_end_date_refused(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, freezer: FrozenDateTimeFactory
+) -> None:
+    """If Anthropic refuses tomorrow as the end, fall back to ending today."""
+    freezer.move_to(NOW)
+    aioclient_mock.get(
+        f"{COST_REPORT_URL}?starting_at=2026-09-20T00:00:00Z&ending_at=2026-10-26T00:00:00Z&bucket_width=1d&limit=31",
+        status=400,
+        json={"error": {"message": "ending_at cannot be in the future"}},
+    )
+    aioclient_mock.get(
+        f"{COST_REPORT_URL}?starting_at=2026-09-20T00:00:00Z&ending_at=2026-10-25T00:00:00Z&bucket_width=1d&limit=31",
+        json={"data": [bucket("2026-10-24", "250")], "has_more": False},
+    )
+    await setup_entry(hass)
+    assert hass.states.get("sensor.anthropic_api_credit_credit_remaining").state == "47.5"
+    assert hass.states.get("sensor.anthropic_api_credit_spent_today").state == "0.0"

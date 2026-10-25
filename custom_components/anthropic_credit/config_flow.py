@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from datetime import timedelta
 import hashlib
 import logging
 from typing import Any
@@ -66,7 +67,7 @@ class AnthropicCreditConfigFlow(ConfigFlow, domain=DOMAIN):
         """Return an error code, or None if the key works."""
         client = AnthropicCostClient(async_get_clientsession(self.hass), key)
         try:
-            await client.daily_costs(dt_util.utcnow().date())
+            await client.daily_costs(dt_util.utcnow().date() - timedelta(days=1))
         except AnthropicAuthError:
             return "invalid_auth"
         except AnthropicError as err:
