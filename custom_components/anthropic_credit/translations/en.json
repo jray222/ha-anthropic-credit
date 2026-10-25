@@ -24,7 +24,7 @@
     },
     "error": {
       "invalid_auth": "Anthropic refused this key. Make sure it is an Admin API key and has not been revoked.",
-      "cannot_connect": "Could not reach the Anthropic API. Try again in a minute.",
+      "cannot_connect": "The Anthropic API did not accept the request. What it said: {problem}",
       "not_admin_key": "This is not an Admin API key. Admin keys start with sk-ant-admin."
     },
     "abort": {

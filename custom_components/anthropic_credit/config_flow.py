@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 import hashlib
+import logging
 from typing import Any
 
 import voluptuous as vol
@@ -32,6 +33,8 @@ from .const import (
     DOMAIN,
 )
 
+_LOGGER = logging.getLogger(__name__)
+
 KEY_SELECTOR = TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD))
 BALANCE_SELECTOR = NumberSelector(
     NumberSelectorConfig(
@@ -56,6 +59,9 @@ class AnthropicCreditConfigFlow(ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
+    def __init__(self) -> None:
+        self._problem = ""
+
     async def _check_key(self, key: str) -> str | None:
         """Return an error code, or None if the key works."""
         client = AnthropicCostClient(async_get_clientsession(self.hass), key)
@@ -63,7 +69,10 @@ class AnthropicCreditConfigFlow(ConfigFlow, domain=DOMAIN):
             await client.daily_costs(dt_util.utcnow().date())
         except AnthropicAuthError:
             return "invalid_auth"
-        except AnthropicError:
+        except AnthropicError as err:
+            # Show Anthropic's own answer so the user can see what went wrong.
+            _LOGGER.warning("Anthropic cost report check failed: %s", err)
+            self._problem = str(err)[:300]
             return "cannot_connect"
         return None
 
@@ -90,6 +99,7 @@ class AnthropicCreditConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=vol.Schema({vol.Required(CONF_ADMIN_KEY): KEY_SELECTOR, **_balance_fields()}),
             errors=errors,
+            description_placeholders={"problem": self._problem},
         )
 
     async def async_step_reauth(self, entry_data: Mapping[str, Any]) -> ConfigFlowResult:
@@ -113,6 +123,7 @@ class AnthropicCreditConfigFlow(ConfigFlow, domain=DOMAIN):
             step_id="reauth_confirm",
             data_schema=vol.Schema({vol.Required(CONF_ADMIN_KEY): KEY_SELECTOR}),
             errors=errors,
+            description_placeholders={"problem": self._problem},
         )
 
     @staticmethod

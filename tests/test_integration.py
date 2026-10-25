@@ -155,3 +155,18 @@ async def test_revoked_key_starts_reauth(
     await hass.async_block_till_done()
     flows = hass.config_entries.flow.async_progress()
     assert [f["context"]["source"] for f in flows] == [config_entries.SOURCE_REAUTH]
+
+
+async def test_api_error_shown_in_flow(hass: HomeAssistant, aioclient_mock: AiohttpClientMocker) -> None:
+    aioclient_mock.get(
+        COST_REPORT_URL, status=400, json={"error": {"message": "starting_at is in the future"}}
+    )
+    result = await hass.config_entries.flow.async_init(
+        DOMAIN, context={"source": config_entries.SOURCE_USER}
+    )
+    result = await hass.config_entries.flow.async_configure(
+        result["flow_id"],
+        {CONF_ADMIN_KEY: KEY, CONF_BALANCE: 20, CONF_TOP_UP_DATE: "2026-10-01"},
+    )
+    assert result["errors"] == {"base": "cannot_connect"}
+    assert result["description_placeholders"]["problem"] == "HTTP 400 starting_at is in the future"
