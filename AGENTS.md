@@ -30,6 +30,16 @@ that day.
 - `config_flow.py`: user step (admin key, balance, top-up date), reauth, options (balance,
   top-up date, scan interval). Settings are read options-first, then entry data.
 
+## Icons
+
+`custom_components/anthropic_credit/brand/` holds `icon.png` (256), `icon@2x.png` (512),
+`logo.png`, `dark_logo.png` and their `@2x`. HA 2026.3+ serves these itself; the
+home-assistant/brands repo no longer accepts custom integrations. HACS (2.0.x, Oct 2026)
+still shows "Icon not available" because its frontend only asks the brands CDN; an open
+HACS PR (hacs/integration#5388 + hacs/frontend#945) will read this same `brand/` folder.
+SVG sources are in `images/` (`icon.svg`, `logo.svg`, `dark_logo.svg`, Inter font);
+re-render with cairosvg, keep icons square and untrimmed, trim logos.
+
 ## Tests and CI
 
 ```bash
